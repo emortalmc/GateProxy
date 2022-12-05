@@ -187,6 +187,7 @@ func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {
 
 		first, _ := color.Make(color.Gold)
 		second, _ := color.Make(color.LightPurple)
+		third, _ := color.Make(color.Aqua)
 
 		motd := &Text{
 			Extra: []Component{
@@ -198,7 +199,7 @@ func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {
 					Content: "⚡   ",
 					S:       Style{Color: color.LightPurple, Bold: True},
 				},
-				gradient("EmortalMC", *first, *second),
+				gradient("EmortalMC", *first, *second, *third),
 				&Text{
 					Content: "   ⚡",
 					S:       Style{Color: color.Gold, Bold: True},
@@ -245,14 +246,14 @@ func tick(ctx context.Context, interval time.Duration, fn func()) {
 	}
 }
 
-func gradient(content string, first color.RGB, second color.RGB) *Text {
+func gradient(content string, colors ...color.RGB) *Text {
 	var component []Component
 	chars := []rune(content)
 
 	for i := range content {
 		t := float64(i) / float64(len(content))
 
-		hex, _ := color.Hex(lerpColor(t, first, second).Hex())
+		hex, _ := color.Hex(lerpColor(t, colors...).Hex())
 
 		component = append(component, &Text{
 			Content: string(chars[i]),
@@ -265,14 +266,21 @@ func gradient(content string, first color.RGB, second color.RGB) *Text {
 	}
 }
 
-func lerpColor(t float64, a color.RGB, b color.RGB) colorful.Color {
+func lerpColor(t float64, colors ...color.RGB) colorful.Color {
+	if t == 1 {
+		return colorful.Color(colors[len(colors)-1])
+	}
+
+	colorT := t * float64(len(colors)-1)
+	newT := colorT - math.Floor(colorT)
+	lastColor := colors[int(colorT)]
+	nextColor := colors[int(colorT+1)]
+
 	return colorful.Color{
-		R: lerpInt(t, a.R, b.R), G: lerpInt(t, a.G, b.G), B: lerpInt(t, a.B, b.B),
+		R: lerpInt(newT, nextColor.R, lastColor.R), G: lerpInt(newT, nextColor.G, lastColor.G), B: lerpInt(newT, nextColor.B, lastColor.B),
 	}
 }
 
 func lerpInt(t float64, a float64, b float64) float64 {
-	a1 := float64(a)
-	b1 := float64(b)
-	return a1*t + b1*(1-t)
+	return a*t + b*(1-t)
 }
