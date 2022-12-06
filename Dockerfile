@@ -1,13 +1,5 @@
 FROM golang:1.19 AS build
 
-USER        container
-#ENV         LC_ALL=en_US.UTF-8
-#ENV         LANG=en_US.UTF-8
-#ENV         LANGUAGE=en_US.UTF-8
-ENV         USER=container HOME=/home/container
-WORKDIR /home/container
-
-
 # Copy the Go Modules manifests
 COPY go.mod go.sum ./
 
@@ -16,6 +8,13 @@ COPY go.mod go.sum ./
 RUN go mod download\
    && useradd -m -d /home/container container
 #                               && locale-gen en_US.UTF-8
+
+USER        container
+#ENV         LC_ALL=en_US.UTF-8
+#ENV         LANG=en_US.UTF-8
+#ENV         LANGUAGE=en_US.UTF-8
+ENV         USER=container HOME=/home/container
+WORKDIR /home/container
 
 # Copy the go source
 COPY command ./command
