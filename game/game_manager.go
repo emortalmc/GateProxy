@@ -75,7 +75,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 		return
 	}
 
-	go player.SendActionBar(&Text{
+	player.SendActionBar(&Text{
 		Extra: []Component{
 			&Text{
 				Content: fmt.Sprintf("Joining %s!", game),
@@ -96,7 +96,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 	server := p.Server(serverName)
 	if server == nil {
 		log.Printf("Couldn't find %s", serverName)
-		go player.SendMessage(&Text{
+		player.SendMessage(&Text{
 			Extra: []Component{
 				&Text{
 					Content: fmt.Sprintf("Couldn't find %s", serverName),
@@ -110,7 +110,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 	res := redisdb.RedisClient.SetEX(ctx, fmt.Sprintf("%s-subgame", player.ID()), fmt.Sprintf("%s %s %s", game, spectate, playerToSpectate), time.Second*10)
 	if res.Err() != nil {
 		log.Println("Failed to set subgame")
-		go player.SendMessage(&Text{
+		player.SendMessage(&Text{
 			Extra: []Component{
 				&Text{
 					Content: "Failed to join game",
@@ -124,7 +124,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 	_, err := player.CreateConnectionRequest(server).Connect(ctx)
 	if err != nil {
 		log.Printf("Failed to join game. %s", err.Error())
-		go player.SendMessage(&Text{
+		player.SendMessage(&Text{
 			Extra: []Component{
 				&Text{
 					Content: fmt.Sprintf("Failed to join game! Error: %s", err.Error()),

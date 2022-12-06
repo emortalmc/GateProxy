@@ -51,6 +51,8 @@ func Gradient(content string, style Style, colors ...color.RGB) *Text {
 }
 
 func LerpColor(t float64, colors ...color.RGB) colorful.Color {
+	t = math.Min(t, 1)
+
 	if t == 1 {
 		return colorful.Color(colors[len(colors)-1])
 	}
