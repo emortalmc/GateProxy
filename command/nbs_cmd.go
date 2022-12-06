@@ -9,7 +9,6 @@ import (
 	"go.minekube.com/gate/pkg/command"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 	"go.minekube.com/gate/pkg/util/uuid"
-	"log"
 	"math"
 	"os"
 	"simple-proxy/nbs"
@@ -43,7 +42,8 @@ var playingMap = make(map[uuid.UUID]context.CancelFunc)
 func newNbsCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 	files, err := os.ReadDir("./nbssongs/")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("nbssongs folder not existing")
+		return nil
 	}
 
 	return brigodier.Literal("nbs").
