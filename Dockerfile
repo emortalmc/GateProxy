@@ -26,7 +26,7 @@ COPY proxy.go ./
 # Copy the Go Modules manifests
 COPY go.mod go.sum ./
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o proxy proxy.go
 
 COPY ./entrypoint.sh /entrypoint.sh
 CMD         [ "/bin/bash", "/entrypoint.sh" ]
