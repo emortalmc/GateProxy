@@ -31,4 +31,4 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 # Move binary into final image
 FROM gcr.io/distroless/static:nonroot AS app
 COPY --from=build /home/container/proxy /
-CMD ["/proxy"]
+CMD         [ "/bin/bash", "/entrypoint.sh" ]
