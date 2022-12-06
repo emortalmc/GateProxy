@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	addr        = flag.String("addr", "localhost:6379", "The address of Redis server")
+	addr        = flag.String("redisaddress", "localhost:6379", "The address of Redis server")
 	ctx         = context.Background()
 	RedisClient = initRedis()
 )

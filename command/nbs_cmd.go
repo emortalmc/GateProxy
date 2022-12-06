@@ -42,8 +42,7 @@ var playingMap = make(map[uuid.UUID]context.CancelFunc)
 func newNbsCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 	files, err := os.ReadDir("./nbssongs/")
 	if err != nil {
-		fmt.Println("nbssongs folder not existing")
-		return nil
+		fmt.Println("nbssongs folder doesn't exist")
 	}
 
 	return brigodier.Literal("nbs").
