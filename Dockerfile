@@ -1,4 +1,4 @@
-FROM golang:1.19 AS build
+FROM arm64v8/golang:1.19 AS build
 
 RUN         apt-get update -y \
             && apt-get install -y --no-install-recommends curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 libstdc++6 lsof build-essential tzdata iproute2 locales \
@@ -26,7 +26,7 @@ COPY proxy.go ./
 # Copy the Go Modules manifests
 COPY go.mod go.sum ./
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux go build -a -o proxy proxy.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 
 COPY ./entrypoint.sh /entrypoint.sh
-CMD         [ "/bin/bash", "/entrypoint.sh" ]
+CMD [ "/bin/bash", "/entrypoint.sh" ]
