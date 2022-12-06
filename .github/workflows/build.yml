@@ -18,7 +18,7 @@ jobs:
         with:
           platforms: 'linux/arm64'
           package: 'main'
-          name: 'program'
+          name: 'simple-proxy'
           compress: 'false'
           dest: 'dist'
       - uses: "marvinpinto/action-automatic-releases@latest"
