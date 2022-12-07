@@ -1,4 +1,6 @@
-FROM golang:1.19 AS build
+FROM golang:1.19-alpine AS build
+
+WORKDIR /build
 
 # Build
 # Copy the go source
@@ -7,9 +9,10 @@ COPY game ./game
 COPY nbs ./nbs
 COPY redisdb ./redisdb
 COPY proxy.go ./
-#COPY go.mod go.sum ./
-COPY go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
+
+COPY . ./
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 
 FROM alpine:latest
