@@ -2,20 +2,20 @@ package redisdb
 
 import (
 	"context"
-	"flag"
 	"github.com/go-redis/redis/v8"
 )
 
 var (
-	addr        = flag.String("redisaddress", "localhost:6379", "The address of Redis server")
 	ctx         = context.Background()
-	RedisClient = initRedis()
+	RedisClient *redis.Client
 )
 
-func initRedis() *redis.Client {
-	flag.Parse()
+func InitRedis() *redis.Client {
+	//addr := flag.String("redisaddress", "localhost:6379", "The address of Redis server")
+	//flag.Parse()
 	client := redis.NewClient(&redis.Options{
-		Addr:     *addr,
+		Addr: "172.17.0.1:6379",
+		//Addr:     "127.0.0.1:6379",
 		Password: "",
 		DB:       0,
 	})

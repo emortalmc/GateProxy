@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go.minekube.com/gate/pkg/edition/java/ping"
 	"go.minekube.com/gate/pkg/edition/java/proto/state"
 	"go.minekube.com/gate/pkg/edition/java/proto/version"
@@ -9,7 +10,8 @@ import (
 	"math/rand"
 	"simple-proxy/command"
 	"simple-proxy/game"
-	"simple-proxy/nbs"
+	"simple-proxy/redisdb"
+	"simple-proxy/webhook"
 	"time"
 
 	"github.com/robinbraemer/event"
@@ -21,7 +23,7 @@ import (
 
 func main() {
 
-	_, _ = nbs.Read("./Resonance.nbs")
+	redisdb.RedisClient = redisdb.InitRedis()
 
 	state.Play.ClientBound.Register(&command.EntitySoundEffect{}, &state.PacketMapping{
 		ID:       0x5F,
@@ -61,22 +63,89 @@ func (p *SimpleProxy) init() error {
 // Register event subscribers
 func (p *SimpleProxy) registerSubscribers() {
 	// Send message on server switch.
-	event.Subscribe(p.Event(), 0, p.onServerSwitch)
+	event.Subscribe(p.Event(), 0, p.onServerLogin)
+	event.Subscribe(p.Event(), 0, p.onServerDisconnect)
+	event.Subscribe(p.Event(), 0, p.onChat)
 
 	// Change the MOTD response.
 	event.Subscribe(p.Event(), 0, pingHandler(p.Proxy))
 }
 
-func (p *SimpleProxy) onServerSwitch(e *proxy.PostLoginEvent) {
-	newServer := e.Player().CurrentServer()
-	if newServer == nil {
-		return
-	}
+func (p *SimpleProxy) onServerLogin(e *proxy.ServerConnectedEvent) {
+	refreshTablist(p.Proxy)
+	webhook.PlayerJoined(e.Player(), p.PlayerCount(), webhook_url)
+}
 
-	e.Player().TabList().SetHeaderFooter(
-		&Text{},
-		&Text{},
-	)
+func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {
+	refreshTablist(p.Proxy)
+	webhook.PlayerLeft(e.Player(), p.PlayerCount(), webhook_url)
+}
+
+func (p *SimpleProxy) onChat(e *proxy.PlayerChatEvent) {
+	e.SetAllowed(false)
+	for _, plr := range p.Players() {
+		go plr.SendMessage(&Text{
+			Extra: []Component{
+				&Text{
+					S:       Style{Color: color.Gray},
+					Content: e.Player().Username(),
+				},
+				&Text{
+					S:       Style{Color: color.Gray},
+					Content: ": ",
+				},
+				&Text{
+					S:       Style{Color: color.White},
+					Content: e.Message(),
+				},
+			},
+		})
+	}
+}
+
+func refreshTablist(p *proxy.Proxy) {
+	purple, _ := color.Make(color.LightPurple)
+	gold, _ := color.Make(color.Gold)
+	aqua, _ := color.Make(color.Aqua)
+	ip, _ := color.Hex("#266ee0")
+
+	for _, plr := range p.Players() {
+		plr.TabList().SetHeaderFooter(
+			&Text{
+				Extra: []Component{
+					&Text{
+						S:       Style{Color: gold},
+						Content: "┌                                                  ",
+					},
+					&Text{
+						S:       Style{Color: purple},
+						Content: "┐ \n",
+					},
+					command.Gradient("EmortalMC\n", Style{Bold: True}, *gold, *purple, *aqua),
+				},
+			},
+			&Text{
+				Extra: []Component{
+					&Text{
+						S:       Style{Color: color.Gray},
+						Content: fmt.Sprintf(" \n%d online", p.PlayerCount()),
+					},
+					&Text{
+						S:       Style{Color: ip},
+						Content: "\nmc.emortal.dev",
+					},
+					&Text{
+						S:       Style{Color: purple},
+						Content: "\n└                                                  ",
+					},
+					&Text{
+						S:       Style{Color: gold},
+						Content: "┘ ",
+					},
+				},
+			},
+		)
+	}
 }
 
 func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {

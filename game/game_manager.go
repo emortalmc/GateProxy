@@ -22,14 +22,44 @@ var (
 )
 
 func RegisterPubSub(p *proxy.Proxy) {
-	pubsub := redisdb.RedisClient.Subscribe(ctx, "registergame")
-	ch := pubsub.Channel()
+	registerPubSub := redisdb.RedisClient.Subscribe(ctx, "registergame")
+	ch := registerPubSub.Channel()
 
 	go func() {
 		for msg := range ch {
 			fmt.Println(msg.Channel, msg.Payload)
 
 			registerGame(p, msg.Payload)
+		}
+	}()
+
+	joinPubSub := redisdb.RedisClient.Subscribe(ctx, "joingame")
+	ch2 := joinPubSub.Channel()
+
+	go func() {
+		for msg := range ch2 {
+			fmt.Println(msg.Channel, msg.Payload)
+
+			args := strings.Fields(msg.Payload)
+			game := args[0]
+			pUuid := args[1]
+
+			server := GameMap[game]
+			if server == "" {
+				continue
+			}
+
+			realID, err := uuid.Parse(pUuid)
+			if err != nil {
+				continue
+			}
+
+			player := p.Player(realID)
+			if player == nil {
+				continue
+			}
+			
+			SendToServer(p, player, server, game, false, uuid.Nil)
 		}
 	}()
 
@@ -107,7 +137,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 		return
 	}
 
-	res := redisdb.RedisClient.SetEX(ctx, fmt.Sprintf("%s-subgame", player.ID()), fmt.Sprintf("%s %s %s", game, spectate, playerToSpectate), time.Second*10)
+	res := redisdb.RedisClient.SetEX(ctx, fmt.Sprintf("%s-subgame", player.ID()), fmt.Sprintf("%s %t %s", game, spectate, playerToSpectate), time.Second*10)
 	if res.Err() != nil {
 		log.Println("Failed to set subgame")
 		player.SendMessage(&Text{
