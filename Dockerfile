@@ -7,6 +7,8 @@ COPY game ./game
 COPY nbs ./nbs
 COPY redisdb ./redisdb
 COPY proxy.go ./
+#COPY go.mod go.sum ./
+COPY go.mod ./
 RUN go mod download
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 
