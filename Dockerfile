@@ -8,16 +8,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 
 FROM arm64v8/alpine:latest
 
-RUN         apt-get update -y \
-            && apt-get install -y --no-install-recommends curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 libstdc++6 lsof build-essential tzdata iproute2 locales \
-            && apt-get clean \
-            && rm -rf /var/lib/apt/lists/* \
-            && useradd -m -d /home/container container \
-            && locale-gen en_US.UTF-8
-
-ENV LC_ALL=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US.UTF-8
+RUN apk add --no-cache --update curl ca-certificates openssl git tar bash sqlite fontconfig \
+    && adduser --disabled-password --home /home/container container
 
 USER container
 ENV USER=container HOME=/home/container
