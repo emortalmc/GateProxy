@@ -8,6 +8,10 @@ import (
 )
 
 func SendWebhookMessage(payload []byte, url string) {
+	if url == "" {
+		return
+	}
+
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", "Go-Discord")

@@ -21,6 +21,8 @@ import (
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 )
 
+var webhook_url = ""
+
 func main() {
 
 	redisdb.RedisClient = redisdb.InitRedis()
