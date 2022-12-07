@@ -15,7 +15,7 @@ WORKDIR /app/
 
 COPY go.mod go.sum /app/
 RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o /app/proxy proxy.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 
 USER container
 ENV USER=container HOME=/home/container
