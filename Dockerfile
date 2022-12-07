@@ -21,7 +21,7 @@ COPY . /app/
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
 
-COPY /app/proxy .
+COPY proxy .
 
 USER container
 ENV USER=container HOME=/home/container
