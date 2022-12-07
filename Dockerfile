@@ -1,4 +1,12 @@
-FROM arm64v8/golang:1.19 AS build
+FROM golang:1.19 AS build
+
+# Build
+# Copy the Go Modules manifests
+COPY go.mod go.sum ./
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
+
+FROM arm64v8/alpine:latest
 
 RUN         apt-get update -y \
             && apt-get install -y --no-install-recommends curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 libstdc++6 lsof build-essential tzdata iproute2 locales \
@@ -21,12 +29,7 @@ COPY game ./game
 COPY nbs ./nbs
 COPY redisdb ./redisdb
 COPY proxy.go ./
-
-# Build
-# Copy the Go Modules manifests
-COPY go.mod go.sum ./
-RUN go mod download
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
+COPY --from=build proxy .
 
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
