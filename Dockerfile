@@ -17,13 +17,12 @@ COPY . /app/
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o /app/proxy proxy.go
 COPY . /app/
-#COPY /app/proxy .
 
 USER container
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
-
+COPY /app/proxy .
 
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
