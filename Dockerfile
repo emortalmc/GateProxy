@@ -1,4 +1,4 @@
-FROM golang:1.19.4-bullseye AS build
+FROM golang:1.19.4-bullseye
 
 RUN         apt-get update -y \
             && apt-get install -y --no-install-recommends curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 libstdc++6 lsof build-essential tzdata iproute2 locales \
@@ -26,7 +26,7 @@ USER container
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
-COPY --from=build /app/proxy .
+COPY /app/proxy .
 
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
