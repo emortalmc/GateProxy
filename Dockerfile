@@ -23,6 +23,6 @@ WORKDIR /home/container
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o ./proxy proxy.go
 
-COPY ./proxy /home/container/proxy
+#COPY ./proxy /home/container/proxyew
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
