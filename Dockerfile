@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:alpine AS build
 
 RUN apk add --no-cache --update curl ca-certificates openssl git tar bash sqlite fontconfig \
     && adduser --disabled-password --home /home/container container
@@ -15,14 +15,14 @@ WORKDIR /app/
 
 COPY go.mod go.sum /app/
 RUN go mod download
-COPY . /home/container/
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o /app/proxy proxy.go
 
 USER container
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o ./proxy proxy.go
 
-#COPY ./proxy /home/container/proxyew
+
+COPY /app/proxy ./proxy
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
