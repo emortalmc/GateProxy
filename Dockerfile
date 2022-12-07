@@ -1,11 +1,7 @@
-FROM golang:1.19.4-bullseye
+FROM golang:alpine
 
-RUN         apt-get update -y \
-            && apt-get install -y --no-install-recommends curl ca-certificates openssl git tar sqlite3 fontconfig libfreetype6 libstdc++6 lsof build-essential tzdata iproute2 locales \
-            && apt-get clean \
-            && rm -rf /var/lib/apt/lists/* \
-            && useradd -m -d /home/container container \
-            && locale-gen en_US.UTF-8
+RUN apk add --no-cache --update curl ca-certificates openssl git tar bash sqlite fontconfig \
+    && adduser --disabled-password --home /home/container container
 
 # Build
 # Copy the go source
