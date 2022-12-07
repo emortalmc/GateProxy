@@ -11,7 +11,9 @@ COPY nbs ./nbs
 COPY redisdb ./redisdb
 COPY proxy.go ./
 
-COPY go.mod go.sum /home/container/
+WORKDIR /app/
+
+COPY go.mod go.sum /app/
 RUN go mod download
 COPY . /home/container/
 
