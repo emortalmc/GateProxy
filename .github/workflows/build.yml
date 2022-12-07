@@ -42,7 +42,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          context: ./proxy
+          context: .
           file: ./Dockerfile
           push: true
           platforms: linux/arm64
