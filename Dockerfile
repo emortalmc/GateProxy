@@ -19,9 +19,9 @@ COPY go.mod go.sum /app/
 RUN go mod download
 COPY . /app/
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o proxy proxy.go
-
-COPY proxy .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o /app/proxy proxy.go
+COPY . /app/
+#COPY /app/proxy .
 
 USER container
 ENV USER=container HOME=/home/container
