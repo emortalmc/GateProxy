@@ -10,19 +10,16 @@ COPY game ./game
 COPY nbs ./nbs
 COPY redisdb ./redisdb
 COPY proxy.go ./
-WORKDIR /app/
-COPY go.mod go.sum /app/
-RUN go mod download
-COPY . /app/
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o /app/proxy proxy.go
-COPY . /app/
+COPY go.mod go.sum /home/container/
+RUN go mod download
+COPY . /home/container/
 
 USER container
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
-COPY /app/proxy .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -o /home/container/proxy proxy.go
 
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
