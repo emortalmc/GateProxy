@@ -24,7 +24,7 @@ USER container
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
-COPY --from=build proxy .
+COPY --from=build /build/proxy .
 
 COPY ./entrypoint.sh /entrypoint.sh
 CMD [ "/bin/bash", "/entrypoint.sh" ]
