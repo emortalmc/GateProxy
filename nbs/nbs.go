@@ -12,9 +12,9 @@ type NBS struct {
 	instruments        byte
 	Length             uint16
 	layers             uint16
-	name               string
-	author             string
-	originalAuthor     string
+	Name               string
+	Author             string
+	OriginalAuthor     string
 	description        string
 	Tps                uint16
 	autoSaving         bool
@@ -101,9 +101,9 @@ func Read(path string) (NBS, error) {
 	nbs.instruments = instruments
 	nbs.Length = length
 	nbs.layers = layers
-	nbs.name = name
-	nbs.author = author
-	nbs.originalAuthor = originalAuthor
+	nbs.Name = name
+	nbs.Author = author
+	nbs.OriginalAuthor = originalAuthor
 	nbs.description = description
 	nbs.Tps = tps / 100
 	nbs.autoSaving = autoSaving == 1

@@ -6,6 +6,7 @@ import (
 	. "go.minekube.com/common/minecraft/component"
 	"go.minekube.com/gate/pkg/command"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
+	"simple-proxy/minimessage"
 )
 
 func newDiscordCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
@@ -21,7 +22,7 @@ func newDiscordCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 					ClickEvent: OpenUrl("https://discord.gg/TZyuMSha96"),
 				},
 				Extra: []Component{
-					Gradient("Click to join our", Style{}, *color1, *color2, *color2),
+					minimessage.Gradient("Click to join our", Style{}, *color1, *color2, *color2),
 					&Text{
 						S:       Style{Bold: True, Color: color1},
 						Content: " Discord",

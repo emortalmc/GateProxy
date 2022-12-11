@@ -9,6 +9,7 @@ import (
 	"go.minekube.com/gate/pkg/util/uuid"
 	"log"
 	"simple-proxy/game"
+	"strings"
 )
 
 func newPlayCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
@@ -24,7 +25,9 @@ func newPlayCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 			brigodier.Argument("game", brigodier.String).
 				Suggests(command.SuggestFunc(func(c *command.Context, b *brigodier.SuggestionsBuilder) *brigodier.Suggestions {
 					for k := range game.GameMap {
-						b.Suggest(game.GameMap[k])
+						if strings.HasPrefix(k, b.RemainingLowerCase) {
+							b.Suggest(k)
+						}
 					}
 					return b.Build()
 				})).

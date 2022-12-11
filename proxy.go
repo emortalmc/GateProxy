@@ -10,6 +10,9 @@ import (
 	"math/rand"
 	"simple-proxy/command"
 	"simple-proxy/game"
+	"simple-proxy/luckperms"
+	"simple-proxy/minimessage"
+	"simple-proxy/packet"
 	"simple-proxy/redisdb"
 	"simple-proxy/webhook"
 	"time"
@@ -21,13 +24,16 @@ import (
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 )
 
-var webhook_url = ""
+var webhook_url = "https://discord.com/api/webhooks/1043300719379366018/KQ0fUhSbrsarIegxjcGYLIvSf4LQRHbT9c0400wft5x3pKBQ9sidMuKw93bJiIGPJqs-"
+
+var purple, _ = color.Make(color.LightPurple)
+var gold, _ = color.Make(color.Gold)
 
 func main() {
 
 	redisdb.RedisClient = redisdb.InitRedis()
 
-	state.Play.ClientBound.Register(&command.EntitySoundEffect{}, &state.PacketMapping{
+	state.Play.ClientBound.Register(&packet.EntitySoundEffect{}, &state.PacketMapping{
 		ID:       0x5F,
 		Protocol: version.Minecraft_1_19_1.Protocol,
 	})
@@ -73,9 +79,21 @@ func (p *SimpleProxy) registerSubscribers() {
 	event.Subscribe(p.Event(), 0, pingHandler(p.Proxy))
 }
 
-func (p *SimpleProxy) onServerLogin(e *proxy.ServerConnectedEvent) {
+func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
 	refreshTablist(p.Proxy)
 	webhook.PlayerJoined(e.Player(), p.PlayerCount(), webhook_url)
+	luckperms.CollectData(e.Player())
+
+	e.Player().SendMessage(minimessage.Parse("<#6c616e>gaming"))
+	e.Player().SendMessage(minimessage.Parse("<bold><#6c616e>gaming"))
+	e.Player().SendMessage(minimessage.Parse("<bold><gold>gaming"))
+	e.Player().SendMessage(minimessage.Parse("<gold>gaming"))
+
+	for _, node := range luckperms.CachedData[e.Player().ID()].Nodes {
+		fmt.Printf("%s %t", node.Key, node.Value)
+	}
+	fmt.Printf("\nHas permission *: %t", luckperms.HasPermission(e.Player(), "gaming.hello.world"))
+
 }
 
 func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {
@@ -85,29 +103,31 @@ func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {
 
 func (p *SimpleProxy) onChat(e *proxy.PlayerChatEvent) {
 	e.SetAllowed(false)
+
+	components := []Component{
+		luckperms.DisplayName(e.Player()),
+		&Text{
+			S:       Style{Color: color.Gray},
+			Content: ": ",
+		},
+		&Text{
+			S:       Style{Color: color.White},
+			Content: e.Message(),
+		},
+	}
+
+	//if e.Player().Username() == "emortaldev" {
+	//	components = append([]Component{command.Gradient("OWNER ", Style{Bold: True}, *purple, *gold)}, components...)
+	//}
+
 	for _, plr := range p.Players() {
 		go plr.SendMessage(&Text{
-			Extra: []Component{
-				&Text{
-					S:       Style{Color: color.Gray},
-					Content: e.Player().Username(),
-				},
-				&Text{
-					S:       Style{Color: color.Gray},
-					Content: ": ",
-				},
-				&Text{
-					S:       Style{Color: color.White},
-					Content: e.Message(),
-				},
-			},
+			Extra: components,
 		})
 	}
 }
 
 func refreshTablist(p *proxy.Proxy) {
-	purple, _ := color.Make(color.LightPurple)
-	gold, _ := color.Make(color.Gold)
 	aqua, _ := color.Make(color.Aqua)
 	ip, _ := color.Hex("#266ee0")
 
@@ -123,7 +143,7 @@ func refreshTablist(p *proxy.Proxy) {
 						S:       Style{Color: purple},
 						Content: "┐ \n",
 					},
-					command.Gradient("EmortalMC\n", Style{Bold: True}, *gold, *purple, *aqua),
+					minimessage.Gradient("EmortalMC\n", Style{Bold: True}, *gold, *purple, *aqua),
 				},
 			},
 			&Text{
@@ -180,7 +200,7 @@ func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {
 					Content: "⚡   ",
 					S:       Style{Color: color.LightPurple, Bold: True},
 				},
-				command.Gradient("EmortalMC", Style{Bold: True}, *first, *second, *third),
+				minimessage.Gradient("EmortalMC", Style{Bold: True}, *first, *second, *third),
 				&Text{
 					Content: "   ⚡",
 					S:       Style{Color: color.Gold, Bold: True},

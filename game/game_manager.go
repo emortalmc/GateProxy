@@ -8,6 +8,7 @@ import (
 	"go.minekube.com/gate/pkg/util/netutil"
 	"go.minekube.com/gate/pkg/util/uuid"
 	"log"
+	"simple-proxy/packet"
 	"simple-proxy/redisdb"
 	"strings"
 
@@ -58,7 +59,7 @@ func RegisterPubSub(p *proxy.Proxy) {
 			if player == nil {
 				continue
 			}
-			
+
 			SendToServer(p, player, server, game, false, uuid.Nil)
 		}
 	}()
@@ -105,13 +106,34 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 		return
 	}
 
-	player.SendActionBar(&Text{
-		Extra: []Component{
-			&Text{
-				Content: fmt.Sprintf("Joining %s!", game),
-				S:       Style{Color: color.Green},
+	if spectate {
+		username := p.Player(playerToSpectate).Username()
+		player.SendActionBar(&Text{
+			Extra: []Component{
+				&Text{
+					Content: fmt.Sprintf("Spectating %s...", username),
+					S:       Style{Color: color.Green},
+				},
 			},
-		},
+		})
+	} else {
+		player.SendActionBar(&Text{
+			Extra: []Component{
+				&Text{
+					Content: fmt.Sprintf("Joining %s...", game),
+					S:       Style{Color: color.Green},
+				},
+			},
+		})
+	}
+
+	_ = player.WritePacket(&packet.EntitySoundEffect{
+		SoundID:       34, // minecraft:block.amethyst_cluster.step
+		SoundCategory: 0,
+		EntityID:      proxy.ServerConnectionEntityID(player.CurrentServer()),
+		Volume:        1,
+		Pitch:         2,
+		Seed:          0,
 	})
 
 	if current.Server().ServerInfo().Name() == serverName {
@@ -137,7 +159,13 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 		return
 	}
 
-	res := redisdb.RedisClient.SetEX(ctx, fmt.Sprintf("%s-subgame", player.ID()), fmt.Sprintf("%s %t %s", game, spectate, playerToSpectate), time.Second*10)
+	var subgameStr string
+	if spectate {
+		subgameStr = fmt.Sprintf("%s %t %s", game, spectate, playerToSpectate)
+	} else {
+		subgameStr = game
+	}
+	res := redisdb.RedisClient.SetEX(ctx, fmt.Sprintf("%s-subgame", player.ID()), subgameStr, time.Second*10)
 	if res.Err() != nil {
 		log.Println("Failed to set subgame")
 		player.SendMessage(&Text{
@@ -151,7 +179,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 		return
 	}
 
-	_, err := player.CreateConnectionRequest(server).Connect(ctx)
+	_, err := player.CreateConnectionRequest(server).Connect(player.Context())
 	if err != nil {
 		log.Printf("Failed to join game. %s", err.Error())
 		player.SendMessage(&Text{
