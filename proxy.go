@@ -94,12 +94,6 @@ func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
 	refreshTablist(p.Proxy)
 	webhook.PlayerJoined(e.Player(), p.PlayerCount(), discordWebhookURL)
 	luckperms.CollectData(e.Player())
-
-	for _, node := range luckperms.CachedData[e.Player().ID()].Nodes {
-		fmt.Printf("%s %t", node.Key, node.Value)
-	}
-	fmt.Printf("\nHas permission *: %t", luckperms.HasPermission(e.Player(), "gaming.hello.world"))
-
 }
 
 func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {

@@ -43,7 +43,7 @@ var magicSoundEvents = [...]int{ // all the note block sound event ids
 
 var playingMap = make(map[uuid.UUID]context.CancelFunc)
 
-func newNbsCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
+func newNbsCmd(p *proxy.Proxy, tempAlias string) brigodier.LiteralNodeBuilder {
 	creeperLyrics := map[int]string{
 		32: "Creeper?",
 		48: "Aw man",
@@ -153,7 +153,7 @@ func newNbsCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 		fmt.Println("nbssongs folder doesn't exist")
 	}
 
-	return brigodier.Literal("nbs").
+	return brigodier.Literal(tempAlias).
 		Then(
 			brigodier.Argument("songname", brigodier.StringPhrase).
 				Suggests(command.SuggestFunc(func(c *command.Context, b *brigodier.SuggestionsBuilder) *brigodier.Suggestions {

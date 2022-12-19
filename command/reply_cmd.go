@@ -10,10 +10,10 @@ import (
 )
 
 func newReplyCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
-	return brigodier.Literal("reply").
+	return brigodier.Literal("r").
 		Executes(command.Command(func(c *command.Context) error {
 			c.Source.SendMessage(&Text{
-				Content: "Usage: /reply <message>",
+				Content: "Usage: /r <message>",
 				S:       Style{Color: color.Gold},
 			})
 			return nil

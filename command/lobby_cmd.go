@@ -9,8 +9,8 @@ import (
 	"simple-proxy/game"
 )
 
-func newLobbyCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
-	return brigodier.Literal("lobby").
+func newLobbyCmd(p *proxy.Proxy, tempAlias string) brigodier.LiteralNodeBuilder {
+	return brigodier.Literal(tempAlias).
 		Executes(command.Command(func(c *command.Context) error {
 			player, ok := c.Source.(proxy.Player)
 			if !ok {
