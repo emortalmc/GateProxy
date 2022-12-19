@@ -3,18 +3,19 @@ package game
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
+	"simple-proxy/packet"
+	"simple-proxy/redisdb"
+
 	"go.minekube.com/common/minecraft/color"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 	"go.minekube.com/gate/pkg/util/netutil"
 	"go.minekube.com/gate/pkg/util/uuid"
-	"log"
-	"simple-proxy/packet"
-	"simple-proxy/redisdb"
-	"strings"
 
 	. "go.minekube.com/common/minecraft/component"
-
-	"time"
 )
 
 var (
@@ -130,7 +131,7 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 	_ = player.WritePacket(&packet.EntitySoundEffect{
 		SoundID:       34, // minecraft:block.amethyst_cluster.step
 		SoundCategory: 0,
-		EntityID:      proxy.ServerConnectionEntityID(player.CurrentServer()),
+		EntityID:      packet.EntityStore.EntityID(player.ID()),
 		Volume:        1,
 		Pitch:         2,
 		Seed:          0,
