@@ -3,19 +3,21 @@ package command
 import (
 	"context"
 	"fmt"
+	"math"
+	"os"
+	"strings"
+	"time"
+
+	"simple-proxy/minimessage"
+	"simple-proxy/nbs"
+	"simple-proxy/packet"
+
 	"go.minekube.com/brigodier"
 	"go.minekube.com/common/minecraft/color"
 	. "go.minekube.com/common/minecraft/component"
 	"go.minekube.com/gate/pkg/command"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 	"go.minekube.com/gate/pkg/util/uuid"
-	"math"
-	"os"
-	"simple-proxy/minimessage"
-	"simple-proxy/nbs"
-	"simple-proxy/packet"
-	"strings"
-	"time"
 )
 
 var magic_sound_events = [...]int{
@@ -219,7 +221,7 @@ func newNbsCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 							_ = player.WritePacket(&packet.EntitySoundEffect{
 								SoundID:       magic_sound_events[int(math.Min(float64(note.Instrument), float64(len(magic_sound_events)-1)))],
 								SoundCategory: 0,
-								EntityID:      proxy.ServerConnectionEntityID(player.CurrentServer()),
+								EntityID:      packet.EntityStore.EntityID(player.ID()),
 								Volume:        float32(note.Volume) / 100,
 								Pitch:         float32(math.Pow(2, (float64(note.Key)-float64(45))/float64(12))),
 								Seed:          0,

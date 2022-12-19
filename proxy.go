@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"go.minekube.com/gate/pkg/edition/java/ping"
-	"go.minekube.com/gate/pkg/edition/java/proto/state"
-	"go.minekube.com/gate/pkg/edition/java/proto/version"
 	"math"
 	"math/rand"
+	"os"
+	"time"
+
 	"simple-proxy/command"
 	"simple-proxy/game"
 	"simple-proxy/luckperms"
@@ -15,7 +15,11 @@ import (
 	"simple-proxy/packet"
 	"simple-proxy/redisdb"
 	"simple-proxy/webhook"
-	"time"
+
+	"go.minekube.com/gate/pkg/edition/java/ping"
+	"go.minekube.com/gate/pkg/edition/java/proto/state"
+	"go.minekube.com/gate/pkg/edition/java/proto/version"
+	"go.minekube.com/gate/pkg/edition/java/proxy/tablist"
 
 	"github.com/robinbraemer/event"
 	"go.minekube.com/common/minecraft/color"
@@ -24,12 +28,18 @@ import (
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 )
 
-var webhook_url = "https://discord.com/api/webhooks/1043300719379366018/KQ0fUhSbrsarIegxjcGYLIvSf4LQRHbT9c0400wft5x3pKBQ9sidMuKw93bJiIGPJqs-"
+var discordWebhookURL string
 
 var purple, _ = color.Make(color.LightPurple)
 var gold, _ = color.Make(color.Gold)
 
 func main() {
+	const discordEnv = "DISCORD_WEBHOOK_URL"
+	discordWebhookURL = os.Getenv(discordEnv)
+	if discordWebhookURL == "" {
+		_, _ = fmt.Fprintln(os.Stderr, discordEnv)
+		os.Exit(1)
+	}
 
 	redisdb.RedisClient = redisdb.InitRedis()
 
@@ -64,6 +74,7 @@ func (p *SimpleProxy) init() error {
 	command.RegisterCommands(p.Proxy)
 	p.registerSubscribers()
 
+	packet.EntityStore.Subscribe(p.Event())
 	game.RegisterPubSub(p.Proxy)
 	return nil
 }
@@ -81,7 +92,7 @@ func (p *SimpleProxy) registerSubscribers() {
 
 func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
 	refreshTablist(p.Proxy)
-	webhook.PlayerJoined(e.Player(), p.PlayerCount(), webhook_url)
+	webhook.PlayerJoined(e.Player(), p.PlayerCount(), discordWebhookURL)
 	luckperms.CollectData(e.Player())
 
 	e.Player().SendMessage(minimessage.Parse("<#6c616e>gaming"))
@@ -98,7 +109,7 @@ func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
 
 func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {
 	refreshTablist(p.Proxy)
-	webhook.PlayerLeft(e.Player(), p.PlayerCount(), webhook_url)
+	webhook.PlayerLeft(e.Player(), p.PlayerCount(), discordWebhookURL)
 }
 
 func (p *SimpleProxy) onChat(e *proxy.PlayerChatEvent) {
@@ -132,7 +143,7 @@ func refreshTablist(p *proxy.Proxy) {
 	ip, _ := color.Hex("#266ee0")
 
 	for _, plr := range p.Players() {
-		plr.TabList().SetHeaderFooter(
+		go tablist.SendHeaderFooter(plr,
 			&Text{
 				Extra: []Component{
 					&Text{
