@@ -6,10 +6,8 @@ import (
 	. "go.minekube.com/common/minecraft/component"
 	"go.minekube.com/gate/pkg/command"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
-	"simple-proxy/game"
 	"simple-proxy/luckperms"
 	"simple-proxy/relationship"
-	"strings"
 )
 
 var dmGreen, _ = color.Hex("#00BD5D")
@@ -29,15 +27,7 @@ func newMsgCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 			return nil
 		})).
 		Then(
-			brigodier.Argument("player", brigodier.String).
-				Suggests(command.SuggestFunc(func(c *command.Context, b *brigodier.SuggestionsBuilder) *brigodier.Suggestions {
-					for k := range game.GameMap {
-						if strings.HasPrefix(k, b.RemainingLowerCase) {
-							b.Suggest(k)
-						}
-					}
-					return b.Build()
-				})).Then(
+			brigodier.Argument("player", brigodier.String).Then(
 				brigodier.Argument("message", brigodier.StringPhrase).
 					Executes(command.Command(func(c *command.Context) error {
 						player, ok := c.Source.(proxy.Player)

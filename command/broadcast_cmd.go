@@ -1,12 +1,12 @@
 package command
 
 import (
-	"fmt"
 	"go.minekube.com/brigodier"
 	"go.minekube.com/common/minecraft/color"
 	. "go.minekube.com/common/minecraft/component"
 	"go.minekube.com/gate/pkg/command"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
+	"simple-proxy/luckperms"
 	"simple-proxy/minimessage"
 )
 
@@ -17,15 +17,11 @@ func newBroadcastCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 	return brigodier.Literal("broadcast").Then(
 		brigodier.Argument("message", brigodier.StringPhrase).
 			Requires(command.Requires(func(c *command.RequiresContext) bool {
-				return c.Source.HasPermission("divine.broadcast")
+				return luckperms.HasPermission(c.Source, "divine.broadcast")
 			})).
 			Executes(command.Command(func(c *command.Context) error {
 				// Colorize/format message
-				component, err := minimessage.LegacyCodec.Unmarshal([]byte(c.String("message")))
-				if err != nil {
-					return c.Source.SendMessage(&Text{
-						Content: fmt.Sprintf("Error formatting message: %v", err)})
-				}
+				component := minimessage.Parse(c.String("message"))
 
 				message := &Text{
 					Extra: []Component{

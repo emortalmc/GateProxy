@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"simple-proxy/minimessage"
+	"strings"
 )
 
 type UserResponse struct {
@@ -76,10 +77,10 @@ func Prefix(player proxy.Player) string {
 }
 
 func HasPermission(source command.Source, permission string) bool {
-	//player, ok := source.(proxy.Player)
-	//if !ok { // always return true if the source is the console
-	//	return true
-	//}
+	player, ok := source.(proxy.Player)
+	if !ok { // always return true if the source is the console
+		return true
+	}
 	//
 	//req, err := http.NewRequest("GET", fmt.Sprintf("%s/user/%s/permissionCheck?permission=%s", restIp, player.ID().String(), permission), nil)
 	//if err != nil {
@@ -109,27 +110,26 @@ func HasPermission(source command.Source, permission string) bool {
 	//}
 	//
 	//return permissionCheck.Result == "true"
-	return false
+	//return false
 
-	//
-	//fmt.Printf("\nChecking permission %s\n", permission)
-	//
-	//for _, node := range CachedData[player.ID()].Nodes {
-	//	if node.Key == permission {
-	//		return node.Value
-	//	}
-	//}
-	//
-	//// check for wildcards
-	//if permission == "*" {
-	//	return false
-	//}
-	//
-	//permission = strings.ReplaceAll(permission, ".*", "")
-	//lastIndex := strings.LastIndex(permission, ".")
-	//if lastIndex == -1 {
-	//	return HasPermission(source, "*")
-	//}
-	//
-	//return HasPermission(source, permission[:lastIndex]+".*")
+	fmt.Printf("\nChecking permission %s\n", permission)
+
+	for _, node := range CachedData[player.ID()].Nodes {
+		if node.Key == permission {
+			return node.Value
+		}
+	}
+
+	// check for wildcards
+	if permission == "*" {
+		return false
+	}
+
+	permission = strings.ReplaceAll(permission, ".*", "")
+	lastIndex := strings.LastIndex(permission, ".")
+	if lastIndex == -1 {
+		return HasPermission(source, "*")
+	}
+
+	return HasPermission(source, permission[:lastIndex]+".*")
 }

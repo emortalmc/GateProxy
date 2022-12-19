@@ -40,7 +40,6 @@ func Parse(miniString string) *Text {
 		}
 
 		newText := Modify(key, split[1], &styles[len(styles)-1])
-		fmt.Printf("Modifying: %s\n", split[1])
 		components = append(components, newText)
 
 	}
@@ -54,7 +53,7 @@ func Modify(key string, content string, style *Style) *Text {
 	newText := &Text{}
 
 	switch {
-	case strings.HasPrefix(key, "#"):
+	case strings.HasPrefix(key, "#"): // <#ff00ff>
 		parsed, err := ParseColor(key)
 		if err != nil {
 			fmt.Println(err)
@@ -63,7 +62,7 @@ func Modify(key string, content string, style *Style) *Text {
 		style.Color = parsed
 		newText.Content = content
 		newText.S = *style
-	case strings.HasPrefix(key, "color"):
+	case strings.HasPrefix(key, "color"): // <color:light_purple>
 		colorName := strings.Split(key, ":")[1]
 		parsed, err := ParseColor(colorName)
 		if err != nil {
@@ -74,12 +73,12 @@ func Modify(key string, content string, style *Style) *Text {
 		newText.Content = content
 		newText.S = *style
 
-	case key == "bold":
+	case key == "bold": // <bold>
 		style.Bold = True
 		newText.Content = content
 		newText.S = *style
 
-	case strings.HasPrefix(key, "gradient"):
+	case strings.HasPrefix(key, "gradient"): // <gradient:light_purple:gold>
 		colorKey := strings.Split(key, ":")
 		colorNames := colorKey[1:]
 

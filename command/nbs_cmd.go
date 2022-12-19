@@ -20,7 +20,7 @@ import (
 	"go.minekube.com/gate/pkg/util/uuid"
 )
 
-var magic_sound_events = [...]int{
+var magicSoundEvents = [...]int{ // all the note block sound event ids
 	774,
 	769,
 	768,
@@ -219,7 +219,7 @@ func newNbsCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 
 						for _, note := range tick.Notes {
 							_ = player.WritePacket(&packet.EntitySoundEffect{
-								SoundID:       magic_sound_events[int(math.Min(float64(note.Instrument), float64(len(magic_sound_events)-1)))],
+								SoundID:       magicSoundEvents[int(math.Min(float64(note.Instrument), float64(len(magicSoundEvents)-1)))],
 								SoundCategory: 0,
 								EntityID:      packet.EntityStore.EntityID(player.ID()),
 								Volume:        float32(note.Volume) / 100,

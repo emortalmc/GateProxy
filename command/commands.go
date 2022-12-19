@@ -16,6 +16,7 @@ func RegisterCommands(p *proxy.Proxy) {
 	p.Command().Register(newReplyCmd(p))
 	p.Command().Register(newSendallCmd(p))
 	p.Command().Register(newSpectateCmd(p))
+	p.Command().Register(newShrugCmd(p))
 }
 
 func registerWithAlias(p *proxy.Proxy, cmd brigodier.LiteralNodeBuilder, aliases ...string) {

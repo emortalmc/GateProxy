@@ -10,13 +10,14 @@ import (
 	"go.minekube.com/gate/pkg/util/uuid"
 	"log"
 	"simple-proxy/game"
+	"simple-proxy/luckperms"
 	"strings"
 )
 
 func newSendallCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 	return brigodier.Literal("sendall").
 		Requires(command.Requires(func(c *command.RequiresContext) bool {
-			return c.Source.HasPermission("divine.broadcast")
+			return luckperms.HasPermission(c.Source, "divine.sendall")
 		})).
 		Executes(command.Command(func(c *command.Context) error {
 			c.Source.SendMessage(&Text{

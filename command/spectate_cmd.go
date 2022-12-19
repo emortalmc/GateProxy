@@ -7,7 +7,6 @@ import (
 	"go.minekube.com/gate/pkg/command"
 	"go.minekube.com/gate/pkg/edition/java/proxy"
 	"simple-proxy/game"
-	"strings"
 )
 
 func newSpectateCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
@@ -21,15 +20,6 @@ func newSpectateCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 		})).
 		Then(
 			brigodier.Argument("username", brigodier.String).
-				Suggests(command.SuggestFunc(func(c *command.Context, b *brigodier.SuggestionsBuilder) *brigodier.Suggestions {
-					for k := range game.GameMap {
-						str := game.GameMap[k]
-						if strings.HasPrefix(str, b.RemainingLowerCase) {
-							b.Suggest(str)
-						}
-					}
-					return b.Build()
-				})).
 				Executes(command.Command(func(c *command.Context) error {
 					player, ok := c.Source.(proxy.Player)
 					if !ok {

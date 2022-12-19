@@ -95,11 +95,6 @@ func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
 	webhook.PlayerJoined(e.Player(), p.PlayerCount(), discordWebhookURL)
 	luckperms.CollectData(e.Player())
 
-	e.Player().SendMessage(minimessage.Parse("<#6c616e>gaming"))
-	e.Player().SendMessage(minimessage.Parse("<bold><#6c616e>gaming"))
-	e.Player().SendMessage(minimessage.Parse("<bold><gold>gaming"))
-	e.Player().SendMessage(minimessage.Parse("<gold>gaming"))
-
 	for _, node := range luckperms.CachedData[e.Player().ID()].Nodes {
 		fmt.Printf("%s %t", node.Key, node.Value)
 	}
@@ -126,10 +121,6 @@ func (p *SimpleProxy) onChat(e *proxy.PlayerChatEvent) {
 			Content: e.Message(),
 		},
 	}
-
-	//if e.Player().Username() == "emortaldev" {
-	//	components = append([]Component{command.Gradient("OWNER ", Style{Bold: True}, *purple, *gold)}, components...)
-	//}
 
 	for _, plr := range p.Players() {
 		go plr.SendMessage(&Text{
@@ -165,7 +156,7 @@ func refreshTablist(p *proxy.Proxy) {
 					},
 					&Text{
 						S:       Style{Color: ip},
-						Content: "\nmc.emortal.dev",
+						Content: "\nᴍᴄ.ᴇᴍᴏʀᴛᴀʟ.ᴅᴇᴠ",
 					},
 					&Text{
 						S:       Style{Color: purple},
