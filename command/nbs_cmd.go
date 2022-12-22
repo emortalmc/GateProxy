@@ -192,12 +192,18 @@ func newNbsCmd(p *proxy.Proxy, tempAlias string) brigodier.LiteralNodeBuilder {
 					if authorStr == "" {
 						authorStr = nbs.Author
 					}
-					player.SendActionBar(minimessage.Gradient(fmt.Sprintf("%s - %s", authorStr, nbs.Name), Style{}, *second, *third))
+					titleGradient := minimessage.Gradient(fmt.Sprintf("%s - %s", authorStr, nbs.Name), Style{}, *second, *third)
+					player.SendActionBar(titleGradient)
 
 					i := 0
 					ctx, cancel := context.WithCancel(player.Context())
 					playingMap[player.ID()] = cancel
-					go tickB(ctx, time.Millisecond*(time.Duration(1000/nbs.Tps)), func() {
+
+					tickDuration := time.Millisecond * (time.Duration(1000.0 / nbs.Tps))
+					songDuration := int64((tickDuration * time.Duration(nbs.Length)) / time.Second)
+					songStart := time.Now()
+
+					go tickB(ctx, tickDuration, func() {
 						if i >= len(nbs.Ticks) {
 							delete(playingMap, player.ID())
 							defer cancel()
@@ -210,6 +216,21 @@ func newNbsCmd(p *proxy.Proxy, tempAlias string) brigodier.LiteralNodeBuilder {
 							lyric := creeperLyrics[i]
 							if lyric != "" {
 								player.SendActionBar(&Text{Content: lyric})
+							}
+						} else {
+							if uint16(i)%nbs.Tps == 0 {
+								elapsed := int64(time.Since(songStart) / time.Second)
+
+								player.SendActionBar(&Text{Extra: []Component{
+									titleGradient,
+									&Text{
+										S:       Style{Color: color.Gray},
+										Content: " | ",
+									},
+									&Text{
+										Content: fmt.Sprintf("%s / %s", formatTime(elapsed), formatTime(songDuration)),
+									},
+								}})
 							}
 						}
 						//green, _ := minimessage.Make(minimessage.Green)
@@ -247,4 +268,11 @@ func tickB(ctx context.Context, interval time.Duration, fn func()) {
 			return
 		}
 	}
+}
+
+func formatTime(secs int64) string {
+	minutes := secs / 60
+	seconds := secs % 60
+
+	return fmt.Sprintf("%02d:%02d", minutes, seconds)
 }

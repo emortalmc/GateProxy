@@ -8,7 +8,7 @@ import (
 )
 
 func newShrugCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
-	return brigodier.Literal("lobby").
+	return brigodier.Literal("shrug").
 		Executes(command.Command(func(c *command.Context) error {
 			player, ok := c.Source.(proxy.Player)
 			if !ok {
@@ -18,7 +18,10 @@ func newShrugCmd(p *proxy.Proxy) brigodier.LiteralNodeBuilder {
 				return nil
 			}
 
-			player.SpoofChatInput("¯\\_☻_/¯")
+			err := player.SpoofChatInput("¯\\_☻_/¯")
+			if err != nil {
+				
+			}
 
 			return nil
 		}))
