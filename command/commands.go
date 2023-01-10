@@ -23,4 +23,6 @@ func RegisterCommands(p *proxy.Proxy) {
 	p.Command().Register(newSendallCmd(p))
 	p.Command().Register(newSpectateCmd(p))
 	p.Command().Register(newShrugCmd(p))
+
+	p.Command().Register(newKickCmd(p))
 }
