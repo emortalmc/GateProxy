@@ -93,7 +93,13 @@ func (p *SimpleProxy) registerSubscribers() {
 func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
 	refreshTablist(p.Proxy)
 	webhook.PlayerJoined(e.Player(), p.PlayerCount(), discordWebhookURL)
-	luckperms.CollectData(e.Player())
+	collectResult := luckperms.CollectData(e.Player())
+	if collectResult != nil {
+		e.Player().SendMessage(&Text{
+			Content: "Failed to collect your LuckPerms data!",
+		})
+		fmt.Printf("failed to collect %s's LuckPerms data %s\n", e.Player().Username(), collectResult)
+	}
 }
 
 func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {

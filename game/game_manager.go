@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	"simple-proxy/packet"
 	"simple-proxy/redisdb"
 
 	"go.minekube.com/common/minecraft/color"
@@ -128,14 +127,14 @@ func SendToServer(p *proxy.Proxy, player proxy.Player, serverName string, game s
 		})
 	}
 
-	_ = player.WritePacket(&packet.EntitySoundEffect{
-		SoundID:       34, // minecraft:block.amethyst_cluster.step
-		SoundCategory: 0,
-		EntityID:      packet.EntityStore.EntityID(player.ID()),
-		Volume:        1,
-		Pitch:         2,
-		Seed:          0,
-	})
+	//_ = player.WritePacket(&packet.EntitySoundEffect{
+	//	SoundID:       34, // minecraft:block.amethyst_cluster.step
+	//	SoundCategory: 0,
+	//	EntityID:      packet.EntityStore.EntityID(player.ID()),
+	//	Volume:        1,
+	//	Pitch:         2,
+	//	Seed:          0,
+	//})
 
 	if current.Server().ServerInfo().Name() == serverName {
 		if spectate {

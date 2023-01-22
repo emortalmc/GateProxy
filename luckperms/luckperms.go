@@ -41,11 +41,11 @@ func DisplayName(player proxy.Player) *Text {
 	return minimessage.Parse(fmt.Sprintf("%s%s", Prefix(player), player.Username()))
 }
 
-func CollectData(player proxy.Player) {
+func CollectData(player proxy.Player) error {
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/user/%s", restIp, player.ID().String()), nil)
 	if err != nil {
 		fmt.Printf("Req errored: %s", err)
-		return
+		return err
 	}
 
 	req.Close = true
@@ -57,7 +57,7 @@ func CollectData(player proxy.Player) {
 	}
 	if err != nil {
 		fmt.Printf("Do errored: %s", err)
-		return
+		return err
 	}
 
 	byteValue, _ := io.ReadAll(resp.Body)
@@ -66,14 +66,19 @@ func CollectData(player proxy.Player) {
 	err = json.Unmarshal(byteValue, &userResponse)
 	if err != nil {
 		fmt.Printf("Unmarshal errored: %s", err)
-		return
+		return err
 	}
 
 	CachedData[player.ID()] = userResponse
+	return nil
 }
 
 func Prefix(player proxy.Player) string {
-	return CachedData[player.ID()].Metadata.Prefix
+	prefix := CachedData[player.ID()].Metadata.Prefix
+	if prefix == "" {
+		prefix = "<#6c616e>"
+	}
+	return prefix
 }
 
 func HasPermission(source command.Source, permission string) bool {
