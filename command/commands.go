@@ -25,5 +25,6 @@ func RegisterCommands(p *proxy.Proxy) {
 	p.Command().Register(newShrugCmd(p))
 
 	p.Command().Register(newKickCmd(p))
+	p.Command().Register(newBanCmd(p))
 	p.Command().Register(newRefreshGamesCmd(p))
 }

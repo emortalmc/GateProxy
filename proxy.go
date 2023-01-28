@@ -6,6 +6,8 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"simple-proxy/command"
@@ -32,6 +34,8 @@ var discordWebhookURL string
 
 var purple, _ = color.Make(color.LightPurple)
 var gold, _ = color.Make(color.Gold)
+var aqua, _ = color.Make(color.Aqua)
+var ip, _ = color.Hex("#266ee0")
 
 func main() {
 	const discordEnv = "DISCORD_WEBHOOK_URL"
@@ -90,21 +94,98 @@ func (p *SimpleProxy) registerSubscribers() {
 	event.Subscribe(p.Event(), 0, pingHandler(p.Proxy))
 }
 
-func (p *SimpleProxy) onServerLogin(e *proxy.PostLoginEvent) {
-	refreshTablist(p.Proxy)
-	webhook.PlayerJoined(e.Player(), p.PlayerCount(), discordWebhookURL)
-	collectResult := luckperms.CollectData(e.Player())
-	if collectResult != nil {
+var randomJoinMessages = []string{
+	"How's the wife?",
+	"How's the kids?",
+	"What's the weather like?",
+	"Back so soon?",
+	"A good day for EmortalMC",
+	"Another great day for procrastination",
+	"Great to see you!",
+	"[Server] Back in 5 minutes",
+	"Salutations, <username>",
+	"Act busy, <username> is here",
+	"Not you again...",
+	"I hope you brought pizza",
+	"I hope you brought friends",
+	"I hope you aren't using Lunar",
+	"Welcome back, we missed you",
+	"You finally arrived!",
+	"Marathon again?",
+}
+
+func (p *SimpleProxy) onServerLogin(e *proxy.ServerPostConnectEvent) {
+	if e.PreviousServer() == nil {
+		refreshTablist(p.Proxy)
+		webhook.PlayerJoined(e.Player(), p.PlayerCount(), discordWebhookURL)
+		collectResult := luckperms.CollectData(e.Player())
+		if collectResult != nil {
+			e.Player().SendMessage(&Text{
+				Content: "Failed to collect your LuckPerms data!",
+			})
+			fmt.Printf("failed to collect %s's LuckPerms data %s\n", e.Player().Username(), collectResult)
+		}
+
+		thereAre := "There are now"
+		plrs := "players"
+		if p.PlayerCount() == 1 {
+			plrs = "player"
+			thereAre = "There is now"
+		}
 		e.Player().SendMessage(&Text{
-			Content: "Failed to collect your LuckPerms data!",
+			Extra: []Component{
+				&Text{
+					S:       Style{Color: color.Gray},
+					Content: "Welcome to ",
+				},
+				minimessage.Gradient("EmortalMC", Style{Bold: True}, *gold, *purple),
+				&Text{
+					S:       Style{Color: color.Gray},
+					Content: fmt.Sprintf("! %s ", thereAre),
+				},
+				&Text{
+					S:       Style{Color: color.Yellow},
+					Content: strconv.Itoa(p.PlayerCount()),
+				},
+				&Text{
+					S:       Style{Color: color.Gray},
+					Content: fmt.Sprintf(" %s online", plrs),
+				},
+			},
 		})
-		fmt.Printf("failed to collect %s's LuckPerms data %s\n", e.Player().Username(), collectResult)
+
+		randomMessage := minimessage.Gradient(strings.Replace(randomJoinMessages[rand.Intn(len(randomJoinMessages))], "<username>", e.Player().Username(), 1), Style{}, *gold, *purple)
+
+		ctx, cancel := context.WithCancel(e.Player().Context())
+		i := 0
+		go tick(ctx, 2*time.Second, func() {
+			if i > 4 {
+				defer cancel()
+				return
+			}
+			i += 1
+
+			e.Player().SendActionBar(randomMessage)
+		})
+
 	}
+
 }
 
 func (p *SimpleProxy) onServerDisconnect(e *proxy.DisconnectEvent) {
 	refreshTablist(p.Proxy)
 	webhook.PlayerLeft(e.Player(), p.PlayerCount(), discordWebhookURL)
+}
+
+func (p *SimpleProxy) onPreJoin(e *proxy.LoginEvent) {
+	for _, a := range command.BanMap {
+		if a == e.Player().ID() {
+			e.Deny(&Text{
+				Content: "get band",
+			})
+			break
+		}
+	}
 }
 
 func (p *SimpleProxy) onChat(e *proxy.PlayerChatEvent) {
@@ -130,8 +211,6 @@ func (p *SimpleProxy) onChat(e *proxy.PlayerChatEvent) {
 }
 
 func refreshTablist(p *proxy.Proxy) {
-	aqua, _ := color.Make(color.Aqua)
-	ip, _ := color.Hex("#266ee0")
 
 	for _, plr := range p.Players() {
 		go tablist.SendHeaderFooter(plr,
@@ -145,7 +224,7 @@ func refreshTablist(p *proxy.Proxy) {
 						S:       Style{Color: purple},
 						Content: "┐ \n",
 					},
-					minimessage.Gradient("EmortalMC\n", Style{Bold: True}, *gold, *purple, *aqua),
+					minimessage.Gradient("EmortalMC\n", Style{Bold: True}, *gold, *purple),
 				},
 			},
 			&Text{
@@ -183,14 +262,11 @@ func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {
 		"gradient lover",
 		"emortal is watching",
 		"Chuck Norris joined and said it was pretty good",
+		"private lobbies when?",
 	}
 
 	return func(e *proxy.PingEvent) {
 		randomMessage := messages[rand.Intn(len(messages))]
-
-		first, _ := color.Make(color.Gold)
-		second, _ := color.Make(color.LightPurple)
-		third, _ := color.Make(color.Aqua)
 
 		motd := &Text{
 			Extra: []Component{
@@ -202,7 +278,7 @@ func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {
 					Content: "⚡   ",
 					S:       Style{Color: color.LightPurple, Bold: True},
 				},
-				minimessage.Gradient("EmortalMC", Style{Bold: True}, *first, *second, *third),
+				minimessage.Gradient("EmortalMC", Style{Bold: True}, *gold, *purple),
 				&Text{
 					Content: "   ⚡",
 					S:       Style{Color: color.Gold, Bold: True},
@@ -239,25 +315,10 @@ func pingHandler(p *proxy.Proxy) func(evt *proxy.PingEvent) {
 func tick(ctx context.Context, interval time.Duration, fn func()) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
-	for {
+
+	for true {
 		select {
 		case <-ticker.C:
-			fn()
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-func tickB(ctx context.Context, ticks int, interval time.Duration, fn func()) {
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop()
-
-	i := 0
-	for i < ticks {
-		select {
-		case <-ticker.C:
-			i++
 			fn()
 		case <-ctx.Done():
 			return
