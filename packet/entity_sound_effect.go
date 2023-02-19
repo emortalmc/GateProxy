@@ -16,7 +16,7 @@ type EntitySoundEffect struct {
 }
 
 func (k *EntitySoundEffect) Encode(c *proto.PacketContext, wr io.Writer) error {
-	err := util.WriteVarInt(wr, k.SoundID)
+	err := util.WriteVarInt(wr, k.SoundID+1)
 	if err != nil {
 		return err
 	}

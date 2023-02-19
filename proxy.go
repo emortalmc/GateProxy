@@ -48,8 +48,8 @@ func main() {
 	redisdb.RedisClient = redisdb.InitRedis()
 
 	state.Play.ClientBound.Register(&packet.EntitySoundEffect{}, &state.PacketMapping{
-		ID:       0x5F,
-		Protocol: version.Minecraft_1_19_1.Protocol,
+		ID:       0x5D,
+		Protocol: version.Minecraft_1_19_3.Protocol,
 	})
 
 	proxy.Plugins = append(proxy.Plugins, proxy.Plugin{

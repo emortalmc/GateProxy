@@ -21,24 +21,22 @@ import (
 )
 
 var magicSoundEvents = [...]int{ // all the note block sound event ids
-	774,
-	769,
-	768,
-	777,
-	775,
-	773,
-	772,
-	770,
-	771,
-	778,
-	779,
-	780,
-	781,
-	782,
-	783,
-	776,
-	294,
-	294,
+	839, // minecraft:block.note_block.harp
+	834, // minecraft:block.note_block.bass
+	833, // minecraft:block.note_block.basedrum
+	842, // minecraft:block.note_block.snare
+	840, // minecraft:block.note_block.hat
+	838, // minecraft:block.note_block.guitar
+	837, // minecraft:block.note_block.flute
+	835, // minecraft:block.note_block.bell
+	836, // minecraft:block.note_block.chime
+	843, // minecraft:block.note_block.xylophone
+	844, // minecraft:block.note_block.iron_xylophone
+	845, // minecraft:block.note_block.cow_bell
+	846, // minecraft:block.note_block.didgeridoo
+	847, // minecraft:block.note_block.bit
+	848, // minecraft:block.note_block.banjo
+	841, // minecraft:block.note_block.pling
 }
 
 var playingMap = make(map[uuid.UUID]context.CancelFunc)
